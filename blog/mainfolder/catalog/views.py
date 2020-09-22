@@ -11,8 +11,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, DestroyAPIView, UpdateAPIView
-from .serializers import ArticleDeleteSerializer, ArticleCreateSerializer, ArticleSerializer, UserSerializer
 
 
 def index(request):
@@ -77,7 +75,7 @@ class DeleteComment(LoginRequiredMixin, generic.View):
             comment.delete()
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-# {"id": }
+
 class OnlikeView(LoginRequiredMixin, generic.View):
 
     def post(self, request, pk):
@@ -113,7 +111,10 @@ class CreateUserView(generic.View):
         return HttpResponseRedirect(reverse('articles'))
 
 
-class ArticleCreateView(CreateView):
+class ArticleCreateView(generic.CreateView):
+    # template_name = 'catalog/article_form.html'
+    # def get(self):
+    #     return HttpResponseRedirect(reverse('index'))
     model = Article
     fields = ['article_title', 'article_additional_title', 'article_text', 'article_image']
 
@@ -127,34 +128,3 @@ class ArticleDeleteView(DeleteView):
     model = Article
     success_url = reverse_lazy('articles')
 
-
-class ArticleCreateSerik(CreateAPIView):
-    queryset = Article.objects.all()
-    serializer_class = ArticleCreateSerializer
-
-
-
-class ArticleDeleteSerik(DestroyAPIView, RetrieveAPIView, UpdateAPIView):
-    queryset = Article.objects.all()
-    serializer_class = ArticleDeleteSerializer
-    lookup_url_kwarg = 'pk'
-
-
-class ArticleListSerik(ListAPIView):
-    serializer_class = ArticleCreateSerializer
-
-    def get_queryset(self):
-        if self.request.GET.get('username', None):
-            return Article.objects.filter(user__name=self.request.GET.get('username', None))
-        return Article.objects.all()
-
-
-class UserListViewSerik(ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-
-class UserCreateSerik(CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (AllowAny, )
